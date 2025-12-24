@@ -7,6 +7,8 @@ import mlflow.sklearn
 import argparse
 import os
 
+mlflow.set_tracking_uri("http://localhost:5000")
+
 
 def load_data(data_dir: str) -> tuple:
     X_train = pd.read_csv(f'{data_dir}/X_train.csv')
@@ -23,32 +25,28 @@ def train_and_log(n_estimators: int, max_depth: int):
     X_train, X_test, y_train, y_test = load_data(data_dir)
     
     mlflow.sklearn.autolog()
-    
     with mlflow.start_run():
         print(f"Training with n_estimators={n_estimators}, max_depth={max_depth}")
-        
         model = RandomForestClassifier(
             n_estimators=n_estimators,
             max_depth=max_depth,
             random_state=42
         )
         model.fit(X_train, y_train)
-        
         y_pred = model.predict(X_test)
-        
         accuracy = accuracy_score(y_test, y_pred)
         precision = precision_score(y_test, y_pred)
         recall = recall_score(y_test, y_pred)
         f1 = f1_score(y_test, y_pred)
-        
         print(f"Accuracy: {accuracy:.4f}")
         print(f"Precision: {precision:.4f}")
         print(f"Recall: {recall:.4f}")
         print(f"F1 Score: {f1:.4f}")
-        
+        # Explicit log model
         mlflow.sklearn.log_model(model, "model")
-        
-        print("Model logged successfully!")
+        run = mlflow.active_run()
+        model_path = os.path.join(mlflow.get_artifact_uri(), "model")
+        print(f"Model logged successfully at: {model_path}")
 
 
 if __name__ == "__main__":
