@@ -7,7 +7,7 @@ import mlflow.sklearn
 import argparse
 import os
 
-mlflow.set_tracking_uri("http://localhost:5000")
+
 
 
 def load_data(data_dir: str) -> tuple:
